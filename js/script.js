@@ -33,15 +33,13 @@ function switchChannel(channelName) {
     currentChannel.messageCount=channelName.messageCount;
 }
 
-//Function to toggle the star-icon in the chat-app-bar (top right) on click
+//Function to toggle the star-icon in the chat-app-bar (top right) and the star in the selected channel on click
 function switchFavorite() {
     $('#chatbar-star').toggleClass('fas far');
-}
-
-//Function to toggle the star-icon of the selected channel in the channels list on click
-function switchFavoriteChannel () {
-    $('li:contains(' + currentChannel.name + ') span .fa-star').toggleClass('fas far');
-    console.log('Switching favorite channel');
+    var starStatus=currentChannel.starred ? 
+        ($('li:contains(' + currentChannel.name + ') .fa-star').toggleClass('fas far'))
+        :
+        ($('li:contains(' + currentChannel.name + ') .fa-star').toggleClass('fas far'));
 }
 
 //Function to change the selected button in the channel-tab-bar (bottom left) on click
