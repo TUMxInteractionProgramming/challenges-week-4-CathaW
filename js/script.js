@@ -1,53 +1,110 @@
-/* #6 start the #external #action and say hello */
-console.log("App is alive");
+//Check if js works
+console.log('app is alive');
 
-/**
- * #6 #Switcher function for the #channels name in the right app bar
- * @param channelName Text which is set
- */
+//Function to change the channels appearance for the channel list and the chat-app-bar
 function switchChannel(channelName) {
-    //Log the channel switch
-    console.log("Tuning in to channel", channelName);
+    console.log('Tuning into channel ' + channelName.name + channelName.createdOn + channelName.createdBy + channelName.starred + channelName.expiresIn + channelName.messageCount);
 
-    //Write the new channel to the right app bar
-    document.getElementById('channel-name').innerHTML = channelName;
+    //Changes the channel name in the chat-app-bar
+    $('#channelName').html(channelName.name);
 
-    //#6 change the #channel #location
-    document.getElementById('channel-location').innerHTML = 'by <a href="http://w3w.co/upgrading.never.helps" target="_blank"><strong>upgrading.never.helps</strong></a>';
+    //Changes the active channel in the channel list to be selected
+    $('li:contains(' + channelName.name + ')').addClass('selected');
 
-    /* #6 #liking channels on #click */
-    $('#channel-star').attr('src', 'http://ip.lfe.mw.tum.de/sections/star-o.png');
+    //Changes all inactive channels to be not selected
+    $('li:not(:contains(' + channelName.name + '))').removeClass('selected');
 
-    /* #6 #highlight the selected #channel.
-       This is inefficient (jQuery has to search all channel list items), but we'll change it later on */
-    $('#channels li').removeClass('selected');
-    $('#channels li:contains(' + channelName + ')').addClass('selected');
+    //Adds the respective w3words location link to the location in the chat-app-bar
+   
+    $('#channelLocation').html('<a href="http://w3w.com/' + channelName.createdBy + '"target="_blank"><strong>' + channelName.createdBy + '</strong></a>');
+   
+    //Adds the respective empty/filled star to the chat-app-bar if the current channel is changed
+    var starStatus=channelName.starred ? 
+        ($('#chatbar-star').removeClass('far fa-star').addClass('fas fa-star'))
+        :
+        ($('#chatbar-star').removeClass('fas fa-star').addClass('far fa-star'));
+
+    //Sets current channel variable to the selected channel object values
+    currentChannel.name=channelName.name;
+    currentChannel.createdOn=channelName.createdOn;
+    currentChannel.createdBy=channelName.createdBy;
+    currentChannel.starred=channelName.starred;
+    currentChannel.expiresIn=channelName.expiresIn;
+    currentChannel.messageCount=channelName.messageCount;
 }
 
-/* #6 #liking a channel on #click */
-function star() {
-    $('#channel-star').attr('src', 'http://ip.lfe.mw.tum.de/sections/star.png');
+//Function to toggle the star-icon in the chat-app-bar (top right) on click
+function switchFavorite() {
+    $('#chatbar-star').toggleClass('fas far');
 }
 
-/**
- * #6 #taptab selects the given tab
- * @param tabId #id of the tab
- */
-function selectTab(tabId) {
-    // #6 #taptab #remove selection from all buttons...
-    $('#tab-bar button').removeClass('selected');
-
-    //...#6 #taptab #log the new tab on change...
-    console.log('Changing to tab', tabId);
-
-    //...#6 #taptab #add selection to the given tab button, its id is passed via the #argument tabId
-    $(tabId).addClass('selected');
+//Function to toggle the star-icon of the selected channel in the channels list on click
+function switchFavoriteChannel () {
+    $('li:contains(' + currentChannel.name + ') span .fa-star').toggleClass('fas far');
+    console.log('Switching favorite channel');
 }
 
-/**
- * #6 #toggle (show/hide) the emojis menu #smile
- */
-function toggleEmojis() {
-    /* $('#emojis').show(); // #show */
-    $('#emojis').toggle(); // #toggle
+//Function to change the selected button in the channel-tab-bar (bottom left) on click
+function selectTab(tabID1, tabID2, tabID3) {
+    //Unselected buttons are not highlighted 
+    $('#'+tabID2).removeClass('selected');
+    $('#'+tabID3).removeClass('selected');
+    //Selected button is highlighted when it is clicked
+    $('#'+tabID1).addClass('selected');
+    console.log('changing to tab' + tabID1);
 }
+
+//Global variables for current channel & current Location
+var currentChannel = {
+    name: '',
+    createdOn:'',
+    createdBy: '', 
+    starred: '',
+    expiresIn: '',
+    messageCount: ''
+};
+    
+var currentLocation = {
+    longitude: 11.576124,
+    latitude: 48.137154,
+    what3words: 'tidying.dispose.steer',
+};
+
+//Constructor variable for text messages
+function Message(createdBy,latitude,longitude,createdOn,expiresIn,text,own){
+    this.createdBy=createdBy;
+    this.latitude=latitude;
+    this.longitude=longitude;
+    this.createdOn=createdOn;
+    this.expiresIn=expiresIn;
+    this.text=text;
+    this.own=own;
+}
+
+//Global variable for the dates in message objects: date of today, variable to calculate the time difference, expiration time for message
+var today = new Date(Date.now());
+var diff = Math.abs((today*20*864e5)- today);
+var expiration = Math.round((diff % 1000) % 60);
+
+//Message object from constructor function "Message"
+var message1=new Message(currentLocation.what3words,currentLocation.latitude,currentLocation.longitude,today.toLocaleString('de-GE'),expiration,'Hello Chatter',true);
+
+//Function to create messages as elements in the html code
+function createMessageElement(messageObject){
+    $('<div>', {
+        'class':'chat-messages own',
+        'html':'<h3><a href="https://map.what3words.com/' + messageObject.createdBy + '"target="_blank"><strong>' + messageObject.createdBy + '</strong></a>' + messageObject.createdOn + '<em>' + messageObject.expiresIn + ' min. left</em></h3><p>' + messageObject.text + '<button>+ 5 min. </button></p>'
+    }).appendTo('#chat');
+}
+
+//Function to send messages
+function sendMessage(){
+    //Let's see if it works
+    console.log('Message sent: ' + message1.text);
+    //User input is included in the function and executed on click
+    var text=$('input[name=text]').val();
+    createMessageElement(message1, message1.text=text);
+    //Clears message input after message has been sent
+    var text=$('input[name=text]').val('');
+}
+
